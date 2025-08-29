@@ -1,3 +1,17 @@
+```
 User-agent: *
 
+Disallow:
+
+# Disallows all crawlers from accessing the 'admin' directory.
+# Disallow: /admin/
+
+# Disallows all crawlers from accessing pages with a specific query parameter.
+# This is useful for blocking temporary or dynamically generated pages.
+# Disallow: /*?param=*
+
+# Disallows all crawlers from accessing the 'private' directory.
+# Disallow: /private/
+
 Sitemap: https://shaurya1504.github.io/Shaurya/sitemap.xml
+```
