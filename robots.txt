@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://www.google.com/search?q=https://shaurya1504.github.io/Shaurya/sitemap.xml
