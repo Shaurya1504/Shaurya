@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <title>Simple Inventory Management System | Free Small Business Stock Tracker</title>
-    <meta name="description" content="Use our simple, free Inventory Management System to track stock, manage items, and monitor low stock alerts for your small business.">
-    <meta name="keywords" content="inventory management, stock tracker, small business inventory, free inventory system">
-    <meta name="robots" content="index, follow"> 
-            <script src="https://cdn.tailwindcss.com"></script>
+    <title>Inventory Management System</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles not available in Tailwind */
         body {
@@ -27,13 +24,14 @@
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
-        <header class="bg-blue-600 shadow-md py-4">
+    <!-- Header & Navigation Bar -->
+    <header class="bg-blue-600 shadow-md py-4">
         <div class="container mx-auto px-4 flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-white">
-                <a href="#dashboard" class="text-white hover:text-blue-200" title="Go to Inventory Manager Dashboard">Inventory Manager</a>
-            </h2>
+            <!-- Site Title -->
+            <a href="#" class="text-2xl font-bold text-white">Inventory Manager</a>
             
-                        <nav class="space-x-4">
+            <!-- Navigation Links -->
+            <nav class="space-x-4">
                 <a href="#dashboard" class="nav-link text-white hover:text-blue-200 transition duration-300 ease-in-out">Dashboard</a>
                 <a href="#add-item" class="nav-link text-white hover:text-blue-200 transition duration-300 ease-in-out">Add Item</a>
                 <a href="#inventory" class="nav-link text-white hover:text-blue-200 transition duration-300 ease-in-out">Inventory</a>
@@ -41,11 +39,13 @@
         </div>
     </header>
 
-        <main class="container mx-auto p-8 flex-grow">
+    <!-- Main Content Area -->
+    <main class="container mx-auto p-8 flex-grow">
 
-                <div id="dashboard" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
-                        <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Inventory Dashboard</h1>
-            <p class="text-lg text-gray-600">Get a quick overview of your stock levels and low-stock alerts.</p>
+        <!-- Dashboard Page Content -->
+        <div id="dashboard" class="page-content active bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Inventory Dashboard</h1>
+            <p class="text-lg text-gray-600">Get a quick overview of your stock levels.</p>
             <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-green-100 p-6 rounded-lg shadow-md">
                     <h3 class="text-xl font-semibold text-green-700">Total Items</h3>
@@ -58,8 +58,9 @@
             </div>
         </div>
 
-                <div id="add-item" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
-                        <h2 class="text-4xl font-extrabold text-gray-800 mb-4">Add New Item to Inventory</h2>
+        <!-- Add Item Page Content -->
+        <div id="add-item" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Add New Item</h1>
             <p class="text-lg text-gray-600">Fill out the form below to add a new item to your inventory.</p>
             <form id="add-item-form" class="mt-6 space-y-4">
                 <div>
@@ -80,8 +81,9 @@
             </form>
         </div>
 
-                <div id="inventory" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
-                        <h2 class="text-4xl font-extrabold text-gray-800 mb-4">Current Inventory List</h2>
+        <!-- Inventory Page Content -->
+        <div id="inventory" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Current Inventory</h1>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 rounded-lg">
                     <thead class="bg-gray-50">
@@ -92,57 +94,59 @@
                         </tr>
                     </thead>
                     <tbody id="inventory-table-body" class="bg-white divide-y divide-gray-200">
-                                            </tbody>
+                        <!-- Inventory items will be rendered here by JavaScript -->
+                    </tbody>
                 </table>
             </div>
             <p id="no-items-message" class="text-center text-gray-500 mt-4">No items in inventory. Add some to get started!</p>
         </div>
     </main>
 
-        <footer class="bg-gray-800 text-white py-4 text-center mt-auto">
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4 text-center mt-auto">
         <p>&copy; 2024 Inventory Manager. All rights reserved.</p>
     </footer>
 
     <script>
-        // DOM Elements
+        // Get all navigation links
         const navLinks = document.querySelectorAll('.nav-link');
+        // Get all page content sections
         const pages = document.querySelectorAll('.page-content');
+        // Get form and table elements
         const addItemForm = document.getElementById('add-item-form');
         const inventoryTableBody = document.getElementById('inventory-table-body');
         const noItemsMessage = document.getElementById('no-items-message');
         const totalItemsElement = document.getElementById('total-items');
         const lowStockElement = document.getElementById('low-stock');
 
-        // Data: Initialize inventory from local storage, or use an empty array
-        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-
-        /**
-         * Saves the current inventory array to local storage.
-         */
-        function saveInventory() {
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-        }
+        // An array to store our inventory items
+        let inventory = [];
 
         /**
          * Renders the inventory table from the 'inventory' array.
          */
         function renderInventory() {
+            // Clear the existing table body
             inventoryTableBody.innerHTML = '';
             
+            // Check if there are any items to display
             if (inventory.length === 0) {
                 noItemsMessage.style.display = 'block';
+                return;
             } else {
                 noItemsMessage.style.display = 'none';
-                inventory.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.description}</td>
-                    `;
-                    inventoryTableBody.appendChild(row);
-                });
             }
+
+            // Loop through the inventory array and create a new table row for each item
+            inventory.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.description}</td>
+                `;
+                inventoryTableBody.appendChild(row);
+            });
         }
 
         /**
@@ -159,15 +163,17 @@
          * @param {string} pageId The ID of the page to show (e.g., 'dashboard', 'add-item').
          */
         function showPage(pageId) {
+            // Loop through all pages and remove the 'active' class
             pages.forEach(page => {
                 page.classList.remove('active');
             });
 
+            // Find the page with the matching ID and add the 'active' class
             const activePage = document.getElementById(pageId);
             if (activePage) {
                 activePage.classList.add('active');
                 
-                // Logic for each tab
+                // Specific actions for each page
                 if (pageId === 'inventory') {
                     renderInventory();
                 } else if (pageId === 'dashboard') {
@@ -176,57 +182,60 @@
             }
         }
 
-        // 1. Navigation Click Handler
+        // Add a click event listener to each navigation link
         navLinks.forEach(link => {
             link.addEventListener('click', (event) => {
+                // Prevent the default link behavior (e.g., jumping to a new URL)
                 event.preventDefault();
+
+                // Get the page ID from the href attribute (e.g., '#home' -> 'home')
                 const pageId = link.getAttribute('href').substring(1);
+
+                // Call the function to show the selected page
                 showPage(pageId);
-                window.history.pushState(null, null, '#' + pageId);
             });
         });
 
-        // 2. Form Submission Handler
+        // Handle form submission for adding a new item
         addItemForm.addEventListener('submit', (event) => {
+            // Prevent the default form submission
             event.preventDefault();
 
+            // Get form data
             const name = document.getElementById('item-name').value;
-            // Ensure quantity is handled as a number
             const quantity = parseInt(document.getElementById('quantity').value, 10);
             const description = document.getElementById('description').value;
 
+            // Create a new item object
             const newItem = {
-                id: Date.now(),
+                id: Date.now(), // Unique ID based on timestamp
                 name: name,
                 quantity: quantity,
                 description: description
             };
 
+            // Add the new item to the inventory array
             inventory.push(newItem);
-            saveInventory(); 
 
+            // Reset the form
             addItemForm.reset();
 
-            // Navigate to the inventory page
+            // Navigate to the inventory page to show the new item
             showPage('inventory');
-            window.history.pushState(null, null, '#inventory');
         });
 
-        // 3. Initial Load and URL Hash Handler (Ensures Dashboard is default)
-        function handleInitialLoad() {
+        // Show the correct page on initial load
+        window.addEventListener('load', () => {
             const initialHash = window.location.hash.substring(1);
-            const pageToShow = (initialHash && document.getElementById(initialHash)) ? initialHash : 'dashboard';
-            
-            // Set the URL hash and show the page
-            showPage(pageToShow);
-            if (window.location.hash !== '#' + pageToShow) {
-                window.history.replaceState(null, null, '#' + pageToShow);
-            }
-        }
-
-        // Event listeners for load and back/forward buttons
-        window.addEventListener('load', handleInitialLoad);
-        window.addEventListener('popstate', handleInitialLoad);
+            if (initialHash) {
+                showPage(initialHash);
+            } else {
+                showPage('dashboard'); // Default to the dashboard
+            }
+        });
     </script>
 </body>
 </html>
+
+
+here you have the whole code make all chnages to make it have a good seo score
