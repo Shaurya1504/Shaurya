@@ -1,241 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management System</title>
-    <!-- Tailwind CSS CDN for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom styles not available in Tailwind */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        /* Hide all page content by default */
-        .page-content {
-            display: none;
-        }
-        /* Show only the active page */
-        .page-content.active {
-            display: block;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .page {
+            display: none;
+        }
+        .active-page {
+            display: block;
+        }
+        /* Style for the custom modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #ffffff;
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
-    <!-- Header & Navigation Bar -->
-    <header class="bg-blue-600 shadow-md py-4">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <!-- Site Title -->
-            <a href="#" class="text-2xl font-bold text-white">Inventory Manager</a>
-            
-            <!-- Navigation Links -->
-            <nav class="space-x-4">
-                <a href="#dashboard" class="nav-link text-white hover:text-blue-200 transition duration-300 ease-in-out">Dashboard</a>
-                <a href="#add-item" class="nav-link text-white hover:text-blue-200 transition duration-300 ease-in-out">Add Item</a>
-                <a href="#inventory" class="nav-link text-white hover:text-blue-200 transition duration-300 ease-in-out">Inventory</a>
-            </nav>
-        </div>
-    </header>
+    <!-- Custom Modal UI for user feedback -->
+    <div id="message-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="hideModal()">&times;</span>
+            <p id="modal-text" class="text-lg font-medium text-gray-800"></p>
+            <button onclick="hideModal()" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors">Close</button>
+        </div>
+    </div>
 
-    <!-- Main Content Area -->
-    <main class="container mx-auto p-8 flex-grow">
+    <!-- Header and Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 md:py-6 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <h1 class="text-2xl font-bold text-gray-800">Inventory Manager</h1>
+            </div>
+            <nav class="w-full md:w-auto">
+                <ul class="flex justify-around md:justify-end md:space-x-8 text-gray-600 font-medium">
+                    <li><a href="#" onclick="showPage('dashboard-page')" class="nav-link relative pb-1 transition-all duration-200 hover:text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0 active-nav">Dashboard</a></li>
+                    <li><a href="#" onclick="showPage('inventory-page')" class="nav-link relative pb-1 transition-all duration-200 hover:text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0">Inventory</a></li>
+                    <li><a href="#" onclick="showPage('add-item-page')" class="nav-link relative pb-1 transition-all duration-200 hover:text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0">Add Item</a></li>
+                    <li><a href="#" onclick="showPage('reports-page')" class="nav-link relative pb-1 transition-all duration-200 hover:text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:w-0 after:h-0.5 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full hover:after:left-0">Reports</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-        <!-- Dashboard Page Content -->
-        <div id="dashboard" class="page-content active bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Inventory Dashboard</h1>
-            <p class="text-lg text-gray-600">Get a quick overview of your stock levels.</p>
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-green-100 p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold text-green-700">Total Items</h3>
-                    <p id="total-items" class="text-4xl font-bold text-green-800 mt-2">0</p>
-                </div>
-                <div class="bg-yellow-100 p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold text-yellow-700">Low Stock Alerts</h3>
-                    <p id="low-stock" class="text-4xl font-bold text-yellow-800 mt-2">0</p>
-                </div>
-            </div>
-        </div>
+    <main class="container mx-auto p-4 flex-grow">
+        <div id="loading-spinner" class="flex justify-center items-center h-full text-blue-600" style="display: none;">
+            <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
 
-        <!-- Add Item Page Content -->
-        <div id="add-item" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Add New Item</h1>
-            <p class="text-lg text-gray-600">Fill out the form below to add a new item to your inventory.</p>
-            <form id="add-item-form" class="mt-6 space-y-4">
-                <div>
-                    <label for="item-name" class="block text-sm font-medium text-gray-700">Item Name</label>
-                    <input type="text" id="item-name" name="item-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
-                </div>
-                <div>
-                    <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
-                    <input type="number" id="quantity" name="quantity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required min="0">
-                </div>
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea id="description" name="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out">
-                    Add Item
-                </button>
-            </form>
-        </div>
+        <!-- User ID display -->
+        <div class="text-center text-sm text-gray-500 mb-4" id="user-id-display" style="display: none;">
+            <p><strong>Your User ID:</strong> <span id="user-id"></span></p>
+        </div>
 
-        <!-- Inventory Page Content -->
-        <div id="inventory" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Current Inventory</h1>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 rounded-lg">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Inventory items will be rendered here by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-            <p id="no-items-message" class="text-center text-gray-500 mt-4">No items in inventory. Add some to get started!</p>
-        </div>
-    </main>
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active-page">
+            <section class="bg-white p-6 rounded-2xl shadow-md">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Dashboard</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Stat Card: Total Items -->
+                    <div class="bg-blue-50 p-6 rounded-xl shadow-inner border border-blue-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-blue-600 font-bold text-xl">Total Items</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2m7 5h2" />
+                            </svg>
+                        </div>
+                        <p id="total-items" class="text-4xl font-extrabold text-blue-800 mt-4">0</p>
+                    </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-4 text-center mt-auto">
-        <p>&copy; 2024 Inventory Manager. All rights reserved.</p>
-    </footer>
+                    <!-- Stat Card: Total Quantity -->
+                    <div class="bg-green-50 p-6 rounded-xl shadow-inner border border-green-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-green-600 font-bold text-xl">Total Quantity</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M12 20a4 4 0 100-5.292" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 12H6a2 2 0 00-2 2v4a2 2 0 002 2h8v-4m-6-6v4m6-6v4" />
+                            </svg>
+                        </div>
+                        <p id="total-quantity" class="text-4xl font-extrabold text-green-800 mt-4">0</p>
+                    </div>
 
-    <script>
-        // Get all navigation links
-        const navLinks = document.querySelectorAll('.nav-link');
-        // Get all page content sections
-        const pages = document.querySelectorAll('.page-content');
-        // Get form and table elements
-        const addItemForm = document.getElementById('add-item-form');
-        const inventoryTableBody = document.getElementById('inventory-table-body');
-        const noItemsMessage = document.getElementById('no-items-message');
-        const totalItemsElement = document.getElementById('total-items');
-        const lowStockElement = document.getElementById('low-stock');
+                    <!-- Stat Card: Total Value -->
+                    <div class="bg-purple-50 p-6 rounded-xl shadow-inner border border-purple-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-purple-600 font-bold text-xl">Total Value ($)</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2v2m-5-2V7m10 5V7m-5 5V7a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 002 2h2a2 2 0 002-2z" />
+                            </svg>
+                        </div>
+                        <p id="total-value" class="text-4xl font-extrabold text-purple-800 mt-4">$0.00</p>
+                    </div>
+                </div>
+            </section>
+        </div>
 
-        // An array to store our inventory items
-        let inventory = [];
+        <!-- Inventory Page -->
+        <div id="inventory-page" class="page">
+            <div class="bg-white p-6 rounded-2xl shadow-md">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Current Inventory</h2>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-inner">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price ($)</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Inventory items will be inserted here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="no-items-message" class="text-center text-gray-500 mt-4 p-4" style="display: none;">
+                    No items in inventory. Add a new item to get started.
+                </div>
+            </div>
+        </div>
 
-        /**
-         * Renders the inventory table from the 'inventory' array.
-         */
-        function renderInventory() {
-            // Clear the existing table body
-            inventoryTableBody.innerHTML = '';
-            
-            // Check if there are any items to display
-            if (inventory.length === 0) {
-                noItemsMessage.style.display = 'block';
-                return;
-            } else {
-                noItemsMessage.style.display = 'none';
-            }
+        <!-- Add/Edit Item Page -->
+        <div id="add-item-page" class="page">
+            <div class="bg-white p-6 rounded-2xl shadow-md max-w-lg mx-auto">
+                <h2 id="form-title" class="text-3xl font-bold mb-6 text-gray-800">Add New Item</h2>
+                <form id="item-form" class="space-y-4">
+                    <div>
+                        <label for="item-name" class="block text-sm font-medium text-gray-700">Item Name</label>
+                        <input type="text" id="item-name" name="item-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2 border">
+                    </div>
+                    <div>
+                        <label for="item-quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+                        <input type="number" id="item-quantity" name="item-quantity" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2 border">
+                    </div>
+                    <div>
+                        <label for="item-price" class="block text-sm font-medium text-gray-700">Price ($)</label>
+                        <input type="number" step="0.01" id="item-price" name="item-price" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 p-2 border">
+                    </div>
+                    <input type="hidden" id="item-id">
+                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-full hover:bg-blue-700 transition-colors">
+                        Save Item
+                    </button>
+                    <button type="button" id="cancel-edit" class="w-full bg-gray-400 text-white font-semibold py-3 rounded-full hover:bg-gray-500 transition-colors" style="display:none;" onclick="cancelEdit()">
+                        Cancel Edit
+                    </button>
+                </form>
+            </div>
+        </div>
 
-            // Loop through the inventory array and create a new table row for each item
-            inventory.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.description}</td>
-                `;
-                inventoryTableBody.appendChild(row);
-            });
-        }
+        <!-- Reports Page -->
+        <div id="reports-page" class="page">
+            <div class="bg-white p-6 rounded-2xl shadow-md">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Inventory Reports</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Report Card: Out of Stock -->
+                    <div class="bg-red-50 p-6 rounded-xl shadow-inner border border-red-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-red-600 font-bold text-xl">Out of Stock Items</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <p id="out-of-stock-items" class="text-4xl font-extrabold text-red-800 mt-4">0</p>
+                    </div>
 
-        /**
-         * Updates the dashboard with current inventory statistics.
-         */
-        function updateDashboard() {
-            totalItemsElement.textContent = inventory.length;
-            const lowStockCount = inventory.filter(item => item.quantity < 10).length;
-            lowStockElement.textContent = lowStockCount;
-        }
+                    <!-- Report Card: Low Stock -->
+                    <div class="bg-yellow-50 p-6 rounded-xl shadow-inner border border-yellow-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-yellow-600 font-bold text-xl">Low Stock Items (&lt; 10)</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m-4 0h-1m-4 0h-1m-1 12a10 10 0 1120 0 10 10 0 01-20 0z" />
+                            </svg>
+                        </div>
+                        <p id="low-stock-items" class="text-4xl font-extrabold text-yellow-800 mt-4">0</p>
+                    </div>
 
-        /**
-         * Shows the specified page and hides all others.
-         * @param {string} pageId The ID of the page to show (e.g., 'dashboard', 'add-item').
-         */
-        function showPage(pageId) {
-            // Loop through all pages and remove the 'active' class
-            pages.forEach(page => {
-                page.classList.remove('active');
-            });
+                    <!-- Report Card: Most Expensive -->
+                    <div class="bg-indigo-50 p-6 rounded-xl shadow-inner border border-indigo-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-indigo-600 font-bold text-xl">Most Expensive Item</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2v2m-5-2V7m10 5V7m-5 5V7a2 2 0 00-2-2h-2a2 2 0 00-2 2v5a2 2 0 002 2h2a2 2 0 002-2z" />
+                            </svg>
+                        </div>
+                        <p id="most-expensive-item" class="text-xl font-extrabold text-indigo-800 mt-4">N/A</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            // Find the page with the matching ID and add the 'active' class
-            const activePage = document.getElementById(pageId);
-            if (activePage) {
-                activePage.classList.add('active');
-                
-                // Specific actions for each page
-                if (pageId === 'inventory') {
-                    renderInventory();
-                } else if (pageId === 'dashboard') {
-                    updateDashboard();
-                }
-            }
-        }
+    </main>
 
-        // Add a click event listener to each navigation link
-        navLinks.forEach(link => {
-            link.addEventListener('click', (event) => {
-                // Prevent the default link behavior (e.g., jumping to a new URL)
-                event.preventDefault();
+    <footer class="bg-white text-gray-500 text-center p-4 text-sm mt-8">
+        © 2023 Inventory Manager. All rights reserved.
+    </footer>
 
-                // Get the page ID from the href attribute (e.g., '#home' -> 'home')
-                const pageId = link.getAttribute('href').substring(1);
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, addDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-                // Call the function to show the selected page
-                showPage(pageId);
-            });
-        });
+        // Firebase configuration and initialization
+        setLogLevel('debug');
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : null);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        // Handle form submission for adding a new item
-        addItemForm.addEventListener('submit', (event) => {
-            // Prevent the default form submission
-            event.preventDefault();
+        // Global variables and DOM elements
+        let userId = null;
+        let inventoryItems = [];
+        let editingItemId = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-            // Get form data
-            const name = document.getElementById('item-name').value;
-            const quantity = parseInt(document.getElementById('quantity').value, 10);
-            const description = document.getElementById('description').value;
+        const pages = document.querySelectorAll('.page');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const itemForm = document.getElementById('item-form');
+        const itemNameInput = document.getElementById('item-name');
+        const itemQuantityInput = document.getElementById('item-quantity');
+        const itemPriceInput = document.getElementById('item-price');
+        const formTitle = document.getElementById('form-title');
+        const saveButton = itemForm.querySelector('button[type="submit"]');
+        const cancelButton = document.getElementById('cancel-edit');
+        const tableBody = document.getElementById('inventory-table-body');
+        const noItemsMessage = document.getElementById('no-items-message');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const userIdSpan = document.getElementById('user-id');
+        const modal = document.getElementById('message-modal');
+        const modalText = document.getElementById('modal-text');
 
-            // Create a new item object
-            const newItem = {
-                id: Date.now(), // Unique ID based on timestamp
-                name: name,
-                quantity: quantity,
-                description: description
-            };
+        // Functions for modal UI
+        function showModal(message) {
+            modalText.textContent = message;
+            modal.style.display = "block";
+        }
 
-            // Add the new item to the inventory array
-            inventory.push(newItem);
+        function hideModal() {
+            modal.style.display = "none";
+        }
 
-            // Reset the form
-            addItemForm.reset();
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                hideModal();
+            }
+        };
 
-            // Navigate to the inventory page to show the new item
-            showPage('inventory');
-        });
+        // Function to show a specific page and update active nav link
+        window.showPage = (pageId) => {
+            pages.forEach(page => page.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            navLinks.forEach(link => link.classList.remove('active-nav'));
+            const activeLink = document.querySelector(`[onclick="showPage('${pageId}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active-nav');
+            }
+        };
 
-        // Show the correct page on initial load
-        window.addEventListener('load', () => {
-            const initialHash = window.location.hash.substring(1);
-            if (initialHash) {
-                showPage(initialHash);
-            } else {
-                showPage('dashboard'); // Default to the dashboard
-            }
-        });
-    </script>
+        // Handles user authentication state changes
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("User is signed in with UID:", userId);
+                userIdSpan.textContent = userId;
+                userIdDisplay.style.display = 'block';
+
+                // Listen for real-time changes to the inventory
+                const inventoryRef = collection(db, `artifacts/${appId}/users/${userId}/inventory`);
+                onSnapshot(inventoryRef, (snapshot) => {
+                    inventoryItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderInventory();
+                    updateReports();
+                    loadingSpinner.style.display = 'none';
+                    if (inventoryItems.length > 0) {
+                        noItemsMessage.style.display = 'none';
+                    } else {
+                        noItemsMessage.style.display = 'block';
+                    }
+                }, (error) => {
+                    console.error("Error fetching inventory data: ", error);
+                    showModal("Failed to load inventory data. Please try again.");
+                    loadingSpinner.style.display = 'none';
+                });
+
+            } else {
+                console.log("User is signed out or not authenticated. Attempting sign-in...");
+                loadingSpinner.style.display = 'flex';
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Signed in anonymously.");
+                    }
+                } catch (error) {
+                    console.error("Authentication failed:", error);
+                    showModal("Authentication failed. Please check the console for details.");
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+        });
+
+        // Renders the inventory table from the `inventoryItems` array
+        function renderInventory() {
+            tableBody.innerHTML = ''; // Clear existing rows
+            inventoryItems.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${item.price.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editItem('${item.id}')" class="text-blue-600 hover:text-blue-900 transition-colors mr-4">Edit</button>
+                        <button onclick="deleteItem('${item.id}')" class="text-red-600 hover:text-red-900 transition-colors">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Updates the report stats on the dashboard
+        function updateReports() {
+            const totalItems = inventoryItems.length;
+            const totalQuantity = inventoryItems.reduce((sum, item) => sum + parseInt(item.quantity, 10), 0);
+            const totalValue = inventoryItems.reduce((sum, item) => sum + (parseFloat(item.price) * parseInt(item.quantity, 10)), 0);
+
+            let outOfStockCount = 0;
+            let lowStockCount = 0;
+            let mostExpensiveItemName = 'N/A';
+            let maxPrice = 0;
+
+            inventoryItems.forEach(item => {
+                if (item.quantity === 0) outOfStockCount++;
+                if (item.quantity < 10) lowStockCount++;
+                if (parseFloat(item.price) > maxPrice) {
+                    maxPrice = parseFloat(item.price);
+                    mostExpensiveItemName = item.name;
+                }
+            });
+
+            document.getElementById('total-items').textContent = totalItems;
+            document.getElementById('total-quantity').textContent = totalQuantity;
+            document.getElementById('total-value').textContent = `$${totalValue.toFixed(2)}`;
+            document.getElementById('out-of-stock-items').textContent = outOfStockCount;
+            document.getElementById('low-stock-items').textContent = lowStockCount;
+            document.getElementById('most-expensive-item').textContent = mostExpensiveItemName;
+        }
+
+        // Handle form submission (add/update item)
+        itemForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = itemNameInput.value.trim();
+            const quantity = parseInt(itemQuantityInput.value, 10);
+            const price = parseFloat(itemPriceInput.value);
+
+            if (!name || isNaN(quantity) || isNaN(price)) {
+                showModal("Please fill out all fields with valid data.");
+                return;
+            }
+
+            const itemData = { name, quantity, price };
+
+            if (!userId) {
+                console.error("User ID is not available. Cannot save data.");
+                showModal("User authentication failed. Cannot save data.");
+                return;
+            }
+
+            loadingSpinner.style.display = 'flex';
+            try {
+                const inventoryRef = collection(db, `artifacts/${appId}/users/${userId}/inventory`);
+                if (editingItemId) {
+                    const itemDocRef = doc(inventoryRef, editingItemId);
+                    await setDoc(itemDocRef, itemData);
+                    showModal("Item updated successfully!");
+                } else {
+                    await addDoc(inventoryRef, itemData);
+                    showModal("Item added successfully!");
+                }
+            } catch (error) {
+                console.error("Error saving item:", error);
+                showModal("Failed to save item. Please check the console for details.");
+            } finally {
+                loadingSpinner.style.display = 'none';
+                itemForm.reset();
+                cancelEdit();
+                showPage('inventory-page');
+            }
+        });
+
+        // Set up the form for editing an item
+        window.editItem = (itemId) => {
+            const itemToEdit = inventoryItems.find(item => item.id === itemId);
+            if (itemToEdit) {
+                editingItemId = itemId;
+                itemNameInput.value = itemToEdit.name;
+                itemQuantityInput.value = itemToEdit.quantity;
+                itemPriceInput.value = itemToEdit.price;
+                formTitle.textContent = "Edit Item";
+                saveButton.textContent = "Update Item";
+                cancelButton.style.display = 'block';
+                showPage('add-item-page');
+            }
+        };
+
+        // Cancel the edit operation and reset the form
+        window.cancelEdit = () => {
+            editingItemId = null;
+            itemForm.reset();
+            formTitle.textContent = "Add New Item";
+            saveButton.textContent = "Save Item";
+            cancelButton.style.display = 'none';
+        };
+
+        // Delete an item from the database
+        window.deleteItem = async (itemId) => {
+            if (!userId) {
+                showModal("User authentication failed. Cannot delete data.");
+                return;
+            }
+
+            // Simple custom confirmation
+            showModal("Are you sure you want to delete this item? There is no undo.");
+            modal.querySelector('button').textContent = "Confirm Delete";
+            modal.querySelector('button').onclick = async () => {
+                hideModal();
+                loadingSpinner.style.display = 'flex';
+                try {
+                    const itemDocRef = doc(db, `artifacts/${appId}/users/${userId}/inventory`, itemId);
+                    await deleteDoc(itemDocRef);
+                    showModal("Item deleted successfully!");
+                } catch (error) {
+                    console.error("Error deleting item:", error);
+                    showModal("Failed to delete item. Please try again.");
+                } finally {
+                    loadingSpinner.style.display = 'none';
+                }
+            };
+        };
+
+        window.onload = function() {
+            // Initial page load, hide loading spinner after content is ready
+            loadingSpinner.style.display = 'none';
+        }
+
+    </script>
 </body>
 </html>
-
-
-here you have the whole code make all chnages to make it have a good seo score
