@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <title>Simple Inventory Management System | Free Small Business Stock Tracker</title>
     <meta name="description" content="Use our simple, free Inventory Management System to track stock, manage items, and monitor low stock alerts for your small business.">
-        <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="keywords" content="inventory management, stock tracker, small business inventory, free inventory system">
+    <meta name="robots" content="index, follow"> 
+            <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles not available in Tailwind */
         body {
@@ -26,9 +29,9 @@
 
         <header class="bg-blue-600 shadow-md py-4">
         <div class="container mx-auto px-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-white">
-                <a href="#dashboard" class="text-white hover:text-blue-200" title="Go to Inventory Manager Dashboard">Inventory Manager</a>
-            </h1>
+                        <h2 class="text-2xl font-bold text-white">
+                                <a href="#dashboard" class="text-white hover:text-blue-200" title="Go to Inventory Manager Dashboard">Inventory Manager</a>
+            </h2>
             
                         <nav class="space-x-4">
                 <a href="#dashboard" class="nav-link text-white hover:text-blue-200 transition duration-300 ease-in-out">Dashboard</a>
@@ -42,7 +45,7 @@
 
                 <div id="dashboard" class="page-content active bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
                         <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Inventory Dashboard</h1>
-            <p class="text-lg text-gray-600">Get a quick overview of your stock levels.</p>
+            <p class="text-lg text-gray-600">Get a quick overview of your stock levels and low-stock alerts.</p>
             <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-green-100 p-6 rounded-lg shadow-md">
                     <h3 class="text-xl font-semibold text-green-700">Total Items</h3>
@@ -101,7 +104,6 @@
     </footer>
 
     <script>
-        // ... (JavaScript remains the same) ...
         // Get all navigation links
         const navLinks = document.querySelectorAll('.nav-link');
         // Get all page content sections
@@ -113,17 +115,22 @@
         const totalItemsElement = document.getElementById('total-items');
         const lowStockElement = document.getElementById('low-stock');
 
-        // An array to store our inventory items
-        let inventory = [];
+        // Initialize inventory from local storage, or use an empty array
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+
+        /**
+         * Saves the current inventory array to local storage.
+         */
+        function saveInventory() {
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+        }
 
         /**
          * Renders the inventory table from the 'inventory' array.
          */
         function renderInventory() {
-            // Clear the existing table body
             inventoryTableBody.innerHTML = '';
             
-            // Check if there are any items to display
             if (inventory.length === 0) {
                 noItemsMessage.style.display = 'block';
                 return;
@@ -131,7 +138,6 @@
                 noItemsMessage.style.display = 'none';
             }
 
-            // Loop through the inventory array and create a new table row for each item
             inventory.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -157,12 +163,10 @@
          * @param {string} pageId The ID of the page to show (e.g., 'dashboard', 'add-item').
          */
         function showPage(pageId) {
-            // Loop through all pages and remove the 'active' class
             pages.forEach(page => {
                 page.classList.remove('active');
             });
 
-            // Find the page with the matching ID and add the 'active' class
             const activePage = document.getElementById(pageId);
             if (activePage) {
                 activePage.classList.add('active');
@@ -179,54 +183,52 @@
         // Add a click event listener to each navigation link
         navLinks.forEach(link => {
             link.addEventListener('click', (event) => {
-                // Prevent the default link behavior (e.g., jumping to a new URL)
                 event.preventDefault();
-
-                // Get the page ID from the href attribute (e.g., '#home' -> 'home')
                 const pageId = link.getAttribute('href').substring(1);
-
-                // Call the function to show the selected page
                 showPage(pageId);
+                // Update URL hash for bookmarking/back button
+                window.history.pushState(null, null, '#' + pageId);
             });
         });
 
         // Handle form submission for adding a new item
         addItemForm.addEventListener('submit', (event) => {
-            // Prevent the default form submission
             event.preventDefault();
 
-            // Get form data
             const name = document.getElementById('item-name').value;
             const quantity = parseInt(document.getElementById('quantity').value, 10);
             const description = document.getElementById('description').value;
 
-            // Create a new item object
             const newItem = {
-                id: Date.now(), // Unique ID based on timestamp
+                id: Date.now(),
                 name: name,
                 quantity: quantity,
                 description: description
             };
 
-            // Add the new item to the inventory array
             inventory.push(newItem);
+            saveInventory(); // Save to local storage
 
-            // Reset the form
             addItemForm.reset();
 
             // Navigate to the inventory page to show the new item
             showPage('inventory');
+            window.history.pushState(null, null, '#inventory');
         });
 
-        // Show the correct page on initial load
-        window.addEventListener('load', () => {
+        // Handle initial load and browser back/forward buttons
+        function handleInitialLoad() {
             const initialHash = window.location.hash.substring(1);
-            if (initialHash) {
+            if (initialHash && document.getElementById(initialHash)) {
                 showPage(initialHash);
             } else {
                 showPage('dashboard'); // Default to the dashboard
+                window.history.replaceState(null, null, '#dashboard'); // Set initial hash cleanly
             }
-        });
+        }
+
+        window.addEventListener('load', handleInitialLoad);
+        window.addEventListener('popstate', handleInitialLoad);
     </script>
 </body>
 </html>
