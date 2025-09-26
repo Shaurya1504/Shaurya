@@ -30,7 +30,7 @@
         <header class="bg-blue-600 shadow-md py-4">
         <div class="container mx-auto px-4 flex justify-between items-center">
                         <h2 class="text-2xl font-bold text-white">
-                                <a href="#dashboard" class="text-white hover:text-blue-200" title="Go to Inventory Manager Dashboard">Inventory Manager</a>
+                <a href="#dashboard" class="text-white hover:text-blue-200" title="Go to Inventory Manager Dashboard">Inventory Manager</a>
             </h2>
             
                         <nav class="space-x-4">
@@ -43,7 +43,7 @@
 
         <main class="container mx-auto p-8 flex-grow">
 
-                <div id="dashboard" class="page-content active bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
+                <div id="dashboard" class="page-content bg-white p-8 rounded-xl shadow-lg transition-all duration-500 ease-in-out">
                         <h1 class="text-4xl font-extrabold text-gray-800 mb-4">Inventory Dashboard</h1>
             <p class="text-lg text-gray-600">Get a quick overview of your stock levels and low-stock alerts.</p>
             <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -104,18 +104,16 @@
     </footer>
 
     <script>
-        // Get all navigation links
+        // DOM Elements
         const navLinks = document.querySelectorAll('.nav-link');
-        // Get all page content sections
         const pages = document.querySelectorAll('.page-content');
-        // Get form and table elements
         const addItemForm = document.getElementById('add-item-form');
         const inventoryTableBody = document.getElementById('inventory-table-body');
         const noItemsMessage = document.getElementById('no-items-message');
         const totalItemsElement = document.getElementById('total-items');
         const lowStockElement = document.getElementById('low-stock');
 
-        // Initialize inventory from local storage, or use an empty array
+        // Data: Initialize inventory from local storage, or use an empty array
         let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
 
         /**
@@ -133,20 +131,18 @@
             
             if (inventory.length === 0) {
                 noItemsMessage.style.display = 'block';
-                return;
             } else {
                 noItemsMessage.style.display = 'none';
+                inventory.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.description}</td>
+                    `;
+                    inventoryTableBody.appendChild(row);
+                });
             }
-
-            inventory.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.quantity}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.description}</td>
-                `;
-                inventoryTableBody.appendChild(row);
-            });
         }
 
         /**
@@ -171,7 +167,7 @@
             if (activePage) {
                 activePage.classList.add('active');
                 
-                // Specific actions for each page
+                // Logic for each tab
                 if (pageId === 'inventory') {
                     renderInventory();
                 } else if (pageId === 'dashboard') {
@@ -180,22 +176,22 @@
             }
         }
 
-        // Add a click event listener to each navigation link
+        // 1. Navigation Click Handler
         navLinks.forEach(link => {
             link.addEventListener('click', (event) => {
                 event.preventDefault();
                 const pageId = link.getAttribute('href').substring(1);
                 showPage(pageId);
-                // Update URL hash for bookmarking/back button
                 window.history.pushState(null, null, '#' + pageId);
             });
         });
 
-        // Handle form submission for adding a new item
+        // 2. Form Submission Handler
         addItemForm.addEventListener('submit', (event) => {
             event.preventDefault();
 
             const name = document.getElementById('item-name').value;
+            // Ensure quantity is handled as a number
             const quantity = parseInt(document.getElementById('quantity').value, 10);
             const description = document.getElementById('description').value;
 
@@ -207,26 +203,28 @@
             };
 
             inventory.push(newItem);
-            saveInventory(); // Save to local storage
+            saveInventory(); 
 
             addItemForm.reset();
 
-            // Navigate to the inventory page to show the new item
+            // Navigate to the inventory page
             showPage('inventory');
             window.history.pushState(null, null, '#inventory');
         });
 
-        // Handle initial load and browser back/forward buttons
+        // 3. Initial Load and URL Hash Handler (Ensures Dashboard is default)
         function handleInitialLoad() {
             const initialHash = window.location.hash.substring(1);
-            if (initialHash && document.getElementById(initialHash)) {
-                showPage(initialHash);
-            } else {
-                showPage('dashboard'); // Default to the dashboard
-                window.history.replaceState(null, null, '#dashboard'); // Set initial hash cleanly
-            }
+            const pageToShow = (initialHash && document.getElementById(initialHash)) ? initialHash : 'dashboard';
+            
+            // Set the URL hash and show the page
+            showPage(pageToShow);
+            if (window.location.hash !== '#' + pageToShow) {
+                window.history.replaceState(null, null, '#' + pageToShow);
+            }
         }
 
+        // Event listeners for load and back/forward buttons
         window.addEventListener('load', handleInitialLoad);
         window.addEventListener('popstate', handleInitialLoad);
     </script>
